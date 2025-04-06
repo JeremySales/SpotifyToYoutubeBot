@@ -3,7 +3,8 @@ import discord
 from dotenv import load_dotenv
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
-from youtubesearchpython import VideosSearch
+# from youtubesearchpython import VideosSearch
+from yt_dlp import YoutubeDL
 
 load_dotenv()
 
@@ -23,18 +24,31 @@ def get_song_query(spotify_url):
         track = sp.track(spotify_url)
         title = track['name']
         artist = track['artists'][0]['name']
+        print(f"Title:{title}, Artist: {artist}")
         return f"{title} {artist}"
     except Exception as e:
         print(f"Error getting Spotify track info: {e}")
         return None
 
+# def search_youtube(query):
+#     try:
+#         search = VideosSearch(query, limit=1)
+#         return search.result()['result'][0]['link']
+#     except Exception as e:
+#         print(f"Error searching YouTube: {e}")
+#         return None
+
+
 def search_youtube(query):
-    try:
-        search = VideosSearch(query, limit=1)
-        return search.result()['result'][0]['link']
-    except Exception as e:
-        print(f"Error searching YouTube: {e}")
-        return None
+    with YoutubeDL({'quiet': True}) as ydl:
+        try:
+            results = ydl.extract_info(f"ytsearch:{query}", download=False)['entries']
+            if results:
+                return f"https://www.youtube.com/watch?v={results[0]['id']}"
+        except Exception as e:
+            print(f"Error searching YouTube: {e}")
+    return None
+
 
 @client.event
 async def on_ready():
