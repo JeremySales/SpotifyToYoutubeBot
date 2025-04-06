@@ -8,6 +8,9 @@ from yt_dlp import YoutubeDL
 
 load_dotenv()
 
+
+OWNER_ID = int(os.getenv("OWNER_ID"))
+
 # Spotify setup
 sp = Spotify(auth_manager=SpotifyClientCredentials(
     client_id=os.getenv("SPOTIFY_CLIENT_ID"),
@@ -24,7 +27,6 @@ def get_song_query(spotify_url):
         track = sp.track(spotify_url)
         title = track['name']
         artist = track['artists'][0]['name']
-        print(f"Title:{title}, Artist: {artist}")
         return f"{title} {artist}"
     except Exception as e:
         print(f"Error getting Spotify track info: {e}")
@@ -58,6 +60,10 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
+
+    if message.author.id == OWNER_ID and message.content == "!shutdown":
+        await message.channel.send("Ok Boss. See ya next time.")
+        await client.close()
 
     if 'open.spotify.com/track' in message.content:
         spotify_url = message.content.strip().split()[0]  # grab the URL
