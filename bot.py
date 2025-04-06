@@ -3,7 +3,6 @@ import discord
 from dotenv import load_dotenv
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
-# from youtubesearchpython import VideosSearch
 from yt_dlp import YoutubeDL
 
 load_dotenv()
@@ -31,15 +30,6 @@ def get_song_query(spotify_url):
     except Exception as e:
         print(f"Error getting Spotify track info: {e}")
         return None
-
-# def search_youtube(query):
-#     try:
-#         search = VideosSearch(query, limit=1)
-#         return search.result()['result'][0]['link']
-#     except Exception as e:
-#         print(f"Error searching YouTube: {e}")
-#         return None
-
 
 def search_youtube(query):
     with YoutubeDL({'quiet': True}) as ydl:
