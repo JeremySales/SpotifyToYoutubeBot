@@ -37,7 +37,7 @@ data "azurerm_container_registry" "existing_acr" {
 }
 
 resource "azurerm_app_service" "app" {
-  name                = "spotify-yt--discord-bot"
+  name                = "spotify-yt-discord-bot"
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
   app_service_plan_id = azurerm_app_service_plan.plan.id
