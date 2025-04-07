@@ -10,6 +10,10 @@ env:
   AZURE_WEBAPP_NAME: spotifyyt-bot
   AZURE_CONTAINER_REGISTRY: spotifyytacr
   IMAGE_NAME: spotify-youtube-bot
+  AZURE_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+  AZURE_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+  AZURE_TENANT_ID: ${{ secrets.TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
 
 jobs:
   build-and-deploy:
@@ -23,15 +27,6 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Azure CLI - Login to ACR
-      run: |
-        az acr login --name $AZURE_CONTAINER_REGISTRY
-
-    - name: Build Docker image
-      run: |
-        docker build -t $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest .
-        docker push $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
@@ -48,3 +43,23 @@ jobs:
         TF_VAR_spotify_client_id: ${{ secrets.SPOTIFY_CLIENT_ID }}
         TF_VAR_spotify_client_secret: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
         TF_VAR_owner_id: ${{ secrets.OWNER_ID }}
+        TF_VAR_client_id: ${{ secrets.CLIENT_ID }}
+        TF_VAR_client_secret: ${{ secrets.CLIENT_SECRET }}
+        TF_VAR_tenant_id: ${{ secrets.TENANT_ID }}
+        TF_VAR_subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest .
+
+    - name: Azure CLI - Login to ACR
+      run: |
+        az acr login --name $AZURE_CONTAINER_REGISTRY
+
+    - name: Push Docker image to ACR
+      run: |
+        docker push $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest
+
+    - name: Azure Web App Deployment
+      run: |
+        az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_RESOURCE_GROUP --docker-custom-image-name $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest --docker-registry-server-url https://$AZURE_CONTAINER_REGISTRY.azurecr.io
