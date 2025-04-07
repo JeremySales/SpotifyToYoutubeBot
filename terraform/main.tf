@@ -1,5 +1,13 @@
 provider "azurerm" {
   features {}
+
+    # Add your subscription_id here
+  subscription_id = var.subscription_id
+
+  # Optionally, you can also set the tenant_id and client_id (service principal) if you're using one
+  # tenant_id     = var.tenant_id
+  # client_id     = var.client_id
+  # client_secret = var.client_secret
 }
 
 resource "azurerm_resource_group" "rg" {
