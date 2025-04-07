@@ -28,15 +28,6 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Azure CLI - Login to ACR
-      run: |
-        az acr login --name $AZURE_CONTAINER_REGISTRY
-
-    - name: Build Docker image
-      run: |
-        docker build -t $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest .
-        docker push $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest
-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
 
@@ -56,3 +47,19 @@ jobs:
         TF_VAR_client_secret: ${{ secrets.CLIENT_SECRET }}
         TF_VAR_tenant_id: ${{ secrets.TENANT_ID }}
         TF_VAR_subscription_id: ${{ secrets.SUBSCRIPTION_ID }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest .
+
+    - name: Azure CLI - Login to ACR
+      run: |
+        az acr login --name $AZURE_CONTAINER_REGISTRY
+
+    - name: Push Docker image to ACR
+      run: |
+        docker push $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest
+
+    - name: Azure Web App Deployment
+      run: |
+        az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_RESOURCE_GROUP --docker-custom-image-name $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest --docker-registry-server-url https://$AZURE_CONTAINER_REGISTRY.azurecr.io
