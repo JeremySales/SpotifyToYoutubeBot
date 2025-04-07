@@ -26,16 +26,6 @@ resource "azurerm_app_service_plan" "plan" {
     tier = "Free"
     size = "F1"
   }
-
-  site_config {
-    linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/spotify-youtube-bot:latest"
-    ip_restriction {
-      action = "Deny"
-      priority = 100
-      name = "Deny All"
-      ip_address = "0.0.0.0/0"
-    }
-  }
 }
 
 resource "azurerm_app_service" "app" {
@@ -57,5 +47,11 @@ resource "azurerm_app_service" "app" {
 
   site_config {
     linux_fx_version = "DOCKER|${azurerm_container_registry.acr.login_server}/spotify-youtube-bot:latest"
+    ip_restriction {
+      action = "Deny"
+      priority = 100
+      name = "Deny All"
+      ip_address = "0.0.0.0/0"
+    }
   }
 }
