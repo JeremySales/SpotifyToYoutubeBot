@@ -6,9 +6,9 @@ on:
       - main
 
 env:
-  AZURE_RESOURCE_GROUP: spotify-youtube-bot-rg
-  AZURE_WEBAPP_NAME: spotifyyt-bot
-  AZURE_CONTAINER_REGISTRY: spotifyytacr
+  AZURE_RESOURCE_GROUP: bot-bois-only-rg
+  AZURE_WEBAPP_NAME: spotify-yt-discord-bot
+  AZURE_CONTAINER_REGISTRY: basicbotboiacr
   IMAGE_NAME: spotify-youtube-bot
   AZURE_CLIENT_ID: ${{ secrets.CLIENT_ID }}
   AZURE_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
