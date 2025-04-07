@@ -12,7 +12,7 @@ provider "azurerm" {
 
 resource "azurerm_resource_group" "rg" {
   name     = "spotify-youtube-bot-rg"
-  location = "East US"
+  location = "East US 2"
 }
 
 resource "azurerm_container_registry" "acr" {
