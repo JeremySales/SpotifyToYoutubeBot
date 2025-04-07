@@ -47,3 +47,4 @@ jobs:
         TF_VAR_discord_bot_token: ${{ secrets.DISCORD_BOT_TOKEN }}
         TF_VAR_spotify_client_id: ${{ secrets.SPOTIFY_CLIENT_ID }}
         TF_VAR_spotify_client_secret: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        TF_VAR_owner_id: ${{ secrets.OWNER_ID }}
