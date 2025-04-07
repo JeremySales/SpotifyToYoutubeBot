@@ -1,0 +1,50 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AZURE_RESOURCE_GROUP: spotify-youtube-bot-rg
+  AZURE_WEBAPP_NAME: spotifyyt-bot
+  AZURE_CONTAINER_REGISTRY: spotifyytacr
+  IMAGE_NAME: spotify-youtube-bot
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Azure CLI - Login to ACR
+      run: |
+        az acr login --name $AZURE_CONTAINER_REGISTRY
+
+    - name: Build Docker image
+      run: |
+        docker build -t $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest .
+        docker push $AZURE_CONTAINER_REGISTRY.azurecr.io/$IMAGE_NAME:latest
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ./terraform
+      env:
+        TF_VAR_discord_bot_token: ${{ secrets.DISCORD_BOT_TOKEN }}
+        TF_VAR_spotify_client_id: ${{ secrets.SPOTIFY_CLIENT_ID }}
+        TF_VAR_spotify_client_secret: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        TF_VAR_owner_id: ${{ secrets.OWNER_ID }}
