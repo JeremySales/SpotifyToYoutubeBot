@@ -11,7 +11,7 @@ provider "azurerm" {
 }
 
 locals {
-  resource_group_name = "spotify-youtube-bot-rg"
+  resource_group_name = "bot-bois-only-rg"
 }
 
 data "azurerm_resource_group" "rg" {
@@ -32,12 +32,12 @@ resource "azurerm_app_service_plan" "plan" {
 
 # Fetch existing ACR details using data source
 data "azurerm_container_registry" "existing_acr" {
-  name                = "spotifyytacr"
+  name                = "basicbotboiacr"
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 
 resource "azurerm_app_service" "app" {
-  name                = "spotifyyt-bot"
+  name                = "spotify-yt--discord-bot"
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
   app_service_plan_id = azurerm_app_service_plan.plan.id
