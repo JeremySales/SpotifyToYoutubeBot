@@ -51,11 +51,15 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    #quick permission restriction, implement better permissions later
+    if message.author.id != OWNER_ID:
+        return
+
     if message.author.id == OWNER_ID and message.content == "!shutdown":
         await message.channel.send("Ok Boss. See ya next time.")
         await client.close()
 
-    if 'open.spotify.com/track' in message.content:
+    if 'open.spotify.com/track' in message.content and message.author.id == OWNER_ID:
         spotify_url = message.content.strip().split()[0]  # grab the URL
         query = get_song_query(spotify_url)
         if query:
