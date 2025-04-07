@@ -12,17 +12,15 @@ provider "azurerm" {
 
 locals {
   resource_group_name = "spotify-youtube-bot-rg"
-  location = "East US 2"
 }
 
-resource "azurerm_resource_group" "rg" {
+data "azurerm_resource_group" "rg" {
   name     = local.resource_group_name
-  location = "East US 2"
 }
 resource "azurerm_app_service_plan" "plan" {
   name                = "spotifyyt-plan"
-  location            = local.location
-  resource_group_name = local.resource_group_name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
   kind                = "Linux"
   reserved            = true
 
@@ -35,13 +33,13 @@ resource "azurerm_app_service_plan" "plan" {
 # Fetch existing ACR details using data source
 data "azurerm_container_registry" "existing_acr" {
   name                = "spotifyytacr"
-  resource_group_name = local.resource_group_name
+  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
 resource "azurerm_app_service" "app" {
   name                = "spotifyyt-bot"
-  location            = local.location
-  resource_group_name = local.resource_group_name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
   app_service_plan_id = azurerm_app_service_plan.plan.id
 
   app_settings = {
