@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from yt_dlp import YoutubeDL
+#from logger import log_message_stats
 
 load_dotenv()
 
@@ -50,6 +51,8 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
+
+    #log_message_stats(message)
 
     #quick permission restriction, implement better permissions later
     if message.author.id != OWNER_ID:
