@@ -1,3 +1,6 @@
+# SQLite database
+bot_logs.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
