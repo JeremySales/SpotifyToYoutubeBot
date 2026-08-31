@@ -1,4 +1,5 @@
 import os
+import random
 import re
 import time
 import discord
@@ -6,7 +7,7 @@ from dotenv import load_dotenv
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 from yt_dlp import YoutubeDL
-from logger import init_db, log_message, log_conversion, log_twitter_conversion
+from logger import init_db, log_message, log_conversion, log_twitter_conversion, log_error
 
 load_dotenv()
 
@@ -22,11 +23,24 @@ sp = Spotify(auth_manager=SpotifyClientCredentials(
 # Discord setup
 intents = discord.Intents.default()
 intents.message_content = True
-client = discord.Client(intents=intents)
+client = discord.Client(intents=intents, allowed_mentions=discord.AllowedMentions.none())
 
 _cooldowns: dict[int, float] = {}
 
 TWITTER_PATTERN = re.compile(r'https?://(?:www\.)?(?:x|twitter)\.com/\S+')
+
+TWITTER_REPLY_MESSAGES = [
+    "Here's one where the embed actually works:",
+    "Fixed it for you, no thanks needed:",
+    "Twitter embeds are broken, but I got you:",
+    "Here, let me fix that for you:",
+    "You had one job, Twitter. Here's a working link:",
+    "Ye olde broken embed, upgraded:",
+    "This one actually shows the video/image, unlike that link:",
+    "Why would they intentionally break embeds?",
+    "Twitter wants you clicking through to their site, not seeing it here. Not today:",
+    "Behold, an embed that works like it's supposed to:",
+]
 
 
 def convert_twitter_url(url: str) -> str:
@@ -41,26 +55,27 @@ def is_rate_limited(user_id: int) -> bool:
     return False
 
 
-def get_song_query(spotify_url):
+def get_song_query(spotify_url, message):
     try:
         track = sp.track(spotify_url)
         title = track['name']
         artist = track['artists'][0]['name']
         return title, artist
     except Exception as e:
-        print(f"Error getting Spotify track info: {e}")
+        log_error('get_song_query', e, message)
         return None, None
 
 
-def search_youtube(query):
+def search_youtube(query, message):
     with YoutubeDL({'quiet': True}) as ydl:
         try:
             results = ydl.extract_info(f"ytsearch:{query}", download=False)['entries']
             if results:
-                return f"https://www.youtube.com/watch?v={results[0]['id']}"
+                result = results[0]
+                return f"https://www.youtube.com/watch?v={result['id']}", result.get('title')
         except Exception as e:
-            print(f"Error searching YouTube: {e}")
-    return None
+            log_error('search_youtube', e, message)
+    return None, None
 
 
 @client.event
@@ -94,24 +109,25 @@ async def on_message(message):
 
     if has_spotify:
         spotify_url = message.content.strip().split()[0]
-        track_name, artist = get_song_query(spotify_url)
+        track_name, artist = get_song_query(spotify_url, message)
         if not track_name:
-            log_conversion(message, spotify_url, None, None, None, success=False)
+            log_conversion(message, spotify_url, None, None, None, None, success=False)
             await message.channel.send("Failed to get song info from Spotify.")
         else:
-            youtube_url = search_youtube(f"{track_name} {artist}")
+            youtube_url, youtube_title = search_youtube(f"{track_name} {artist}", message)
             if youtube_url:
-                log_conversion(message, spotify_url, track_name, artist, youtube_url, success=True)
-                await message.channel.send(youtube_url)
+                log_conversion(message, spotify_url, track_name, artist, youtube_url, youtube_title, success=True)
+                safe_title = youtube_title.replace('`', "'")
+                await message.channel.send(f"`{safe_title}`\n{youtube_url}")
             else:
-                log_conversion(message, spotify_url, track_name, artist, None, success=False)
+                log_conversion(message, spotify_url, track_name, artist, None, None, success=False)
                 await message.channel.send("Couldn't find the song on YouTube.")
 
     if twitter_match:
         original_url = twitter_match.group(0)
         converted_url = convert_twitter_url(original_url)
         log_twitter_conversion(message, original_url, converted_url)
-        await message.channel.send(converted_url)
+        await message.channel.send(f"{random.choice(TWITTER_REPLY_MESSAGES)}\n{converted_url}")
 
 
 client.run(os.getenv("DISCORD_BOT_TOKEN"))

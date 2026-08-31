@@ -8,7 +8,12 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && adduser -D botuser \
+    && chown -R botuser:botuser /app
+
+# Run as a non-root user
+USER botuser
 
 # Run the bot
 CMD ["python", "bot.py"]

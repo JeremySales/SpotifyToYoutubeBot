@@ -37,7 +37,18 @@ def init_db():
                 track_name TEXT,
                 artist TEXT,
                 youtube_url TEXT,
+                youtube_title TEXT,
                 success INTEGER NOT NULL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS errors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                user_id INTEGER,
+                username TEXT,
+                function TEXT NOT NULL,
+                error TEXT NOT NULL
             )
         """)
         conn.execute("""
@@ -95,13 +106,30 @@ def log_twitter_conversion(message, original_url, converted_url):
         )
 
 
-def log_conversion(message, spotify_url, track_name, artist, youtube_url, success):
+def log_error(func_name, error, message=None):
+    with _conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO errors (timestamp, user_id, username, function, error)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                datetime.now().isoformat(),
+                message.author.id if message else None,
+                str(message.author) if message else None,
+                func_name,
+                str(error),
+            ),
+        )
+
+
+def log_conversion(message, spotify_url, track_name, artist, youtube_url, youtube_title, success):
     with _conn() as conn:
         conn.execute(
             """
             INSERT INTO spotify_conversions
-                (timestamp, user_id, username, spotify_url, track_name, artist, youtube_url, success)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (timestamp, user_id, username, spotify_url, track_name, artist, youtube_url, youtube_title, success)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 datetime.now().isoformat(),
@@ -111,6 +139,7 @@ def log_conversion(message, spotify_url, track_name, artist, youtube_url, succes
                 track_name,
                 artist,
                 youtube_url,
+                youtube_title,
                 int(success),
             ),
         )

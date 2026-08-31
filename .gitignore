@@ -1,6 +1,10 @@
 # SQLite database
 bot_logs.db
 
+# Local Claude project memory (not for version control)
+CLAUDE_MEMORY.md
+BRAINSTORM.md
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
