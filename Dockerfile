@@ -10,6 +10,7 @@ COPY . .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt \
     && adduser -D botuser \
+    && mkdir -p /app/data \
     && chown -R botuser:botuser /app
 
 # Run as a non-root user
