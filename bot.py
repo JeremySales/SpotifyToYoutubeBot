@@ -15,10 +15,12 @@ OWNER_ID = int(os.getenv("OWNER_ID"))
 RATE_LIMIT_SECONDS = 30
 
 # Spotify setup
+# requests_session=False opens a fresh connection per call; a pooled one goes stale while idle
 sp = Spotify(auth_manager=SpotifyClientCredentials(
     client_id=os.getenv("SPOTIFY_CLIENT_ID"),
-    client_secret=os.getenv("SPOTIFY_CLIENT_SECRET")
-))
+    client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
+    requests_session=False
+), requests_session=False)
 
 # Discord setup
 intents = discord.Intents.default()
